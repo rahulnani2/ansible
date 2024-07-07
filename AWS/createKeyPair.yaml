@@ -1,0 +1,19 @@
+---
+- hosts: localhost 
+  gather_facts: False
+  tasks: 
+    - name: Create a key pair
+      ec2_key: 
+        name: commandKeyPair 
+        region: us-east-1
+      register: keyout
+
+    - name: print Key 
+      debug: 
+        var: keyout
+
+    - name: Save Key 
+      copy: 
+        content: "{{keyout.key.private_key}}" 
+        dest: ./commandkey.pem
+      when: keyout.changed     

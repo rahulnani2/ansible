@@ -1,0 +1,82 @@
+---
+- name: Install NTP service in Hosts 
+  hosts: all 
+  become: yes 
+  tasks:
+    - name: Install NTP service in Centos 
+      yum:
+        name: "{{item}}" 
+        state: present 
+      when: ansible_distribution == "CentOS" 
+      loop:
+        - chrony
+        - git
+        - unzip
+        - wget 
+
+    - name: Install NTP service in Ubuntu 
+      apt:
+        name: "{{item}}"
+        state: present 
+        update_cache: yes 
+      when: ansible_distribution == "Ubuntu"
+      loop:
+        - ntp
+        - git
+        - unzip
+        - wget
+
+    - name: Start Service on Centos
+      service:
+        name: "{{item}}"
+        state: started
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+      loop:
+        - chronyd
+
+    - name: Start NTP service on Ubuntu 
+      service:
+        name: "{{item}}" 
+        state: started
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"      
+      loop:
+        - ntp 
+          
+    - name: Copy content to banner
+      copy:
+        content: '# The Server is managed by Ansible . No Manual Changes should be applied'
+        dest: /etc/motd
+
+    - name: Deploy NTP conf file in Centos
+      template:
+        src: templates/ntpconfCentos
+        dest: /etc/chrony.conf
+        backup: yes
+      when: ansible_distribution == "CentOS"
+      notify:
+        - Restart Service on Centos
+
+    - name: Deploy NTP conf file in Ubuntu
+      template:
+        src: templates/ntpconfUbuntu
+        dest: /etc/ntp.conf
+        backup: yes
+      when: ansible_distribution == "Ubuntu"
+      notify:
+        - Restart NTP service on Ubuntu
+  handlers:
+    - name: Restart Service on Centos
+      service:
+        name: chronyd
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: Restart NTP service on Ubuntu
+      service:
+        name: ntp
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"

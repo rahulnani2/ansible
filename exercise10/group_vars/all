@@ -1,0 +1,5 @@
+USRNM: commonuser
+COMM: variable from groupvars_all file
+ntp1: time.google.com
+ntp2: time1.google.com
+ntp3: time2.google.com

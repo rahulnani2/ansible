@@ -1,0 +1,22 @@
+
+---
+- name: Create SQL DB and User 
+  hosts: dbservers
+  become: yes
+  tasks: 
+    - name: Install Python Dependencies in Mysql DB server 
+      ansible.builtin.yum:
+        name: python3-PyMySQL
+        state: present
+    - name: Create new DB with name accounts
+      community.mysql.mysql_db:
+        name: accounts
+        state: present 
+        login_unix_socket: /var/lib/mysql/mysql.sock
+    - name: Create a user in mysql accounts DB 
+      community.mysql.mysql_user:
+        name: vprofile
+        password: 'admin_1234'
+        priv: '*.*:ALL'
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock	

@@ -1,0 +1,45 @@
+---
+- name : DBServer Setup 
+  hosts: dbservers 
+  become: yes
+  vars:
+    dbname: edison
+    dbuser: thomas
+    dbpass: bulb 
+  tasks:
+    - name: Print message 
+      debug:
+        msg: "The name of DB is {{dbname}}"
+
+    - debug:
+        var: dbuser
+
+    - name: Install mariaDb server 
+      ansible.builtin.yum:
+        name: mariadb-server
+        state: present
+
+    - name: Start mariDB service 
+      ansible.builtin.service:
+        name: mariadb
+        state: started
+        enabled: yes 
+    
+    - name: Create a DataBase
+      community.mysql.mysql_db:
+        name: "{{dbname}}"
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock 
+
+    - name: Create a DB 
+      community.mysql.mysql_user:
+        name: "{{dbuser}}"
+        password: "{{dbpass}}"
+        priv: '*.*:ALL'
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+      register: dbout
+
+    - name: Print dbout variable 
+      debug:
+        var: dbout  
